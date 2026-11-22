@@ -1,0 +1,44 @@
+# ROS 2 workspace build artifacts
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/
+
+# Python & virtual environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# ML / VLA model weights & rosbags
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.safetensors
+*.bin
+*.bag
+*.db3
+*.mcap
+
+# Secrets & local environment variables
+.env
+*.key
+*.pem
+
+# Heavy media & archives (host videos on GitHub CDN or YouTube)
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.zip
+*.tar.gz
+
+# Isaac Sim caches, diagnostics & editor scratch files
+.nvidia-omniverse/
+kit_logs/
+frames_*.pdf
+frames_*.gv
+*.log
+*.tmp
+*.swp
+.vscode/
