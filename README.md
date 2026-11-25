@@ -7,15 +7,32 @@ Autonomous mobile manipulation pipeline combining a **Nova Carter** base and a *
 - **Simulator:** NVIDIA Isaac Sim 6.2.0
 - **Hardware Baseline:** NVIDIA RTX 5060 Ti (16 GB VRAM)
 
+
+## `v0.2.0` — Manipulator Integration *(In Progress)*
+- [x] Mounted Franka Panda (`panda_link0`) onto Nova Carter (`chassis_link`) via `FixedJoint` at `(X: -0.19 m, Z: 0.48 m)`
+- [x] Configured multi-height pick-and-place warehouse workspace (two low arched tables + one taller packing workbench)
+- [ ] Wire ROS 2 `/joint_states`, `/joint_command`, and Franka TF tree
+
+<p align="center">
+  <img src="media/nova_carter_franka_mount.png" alt="Nova Carter with Franka Panda in NVIDIA Isaac Sim" width="650" /><br>
+  <em>Franka Panda 7-DoF arm mounted on Nova Carter's top deck in Isaac Sim 6.2.0.</em>
+</p>
+
+<p align="center">
+  <img src="media/warehouse_multi_height_layout.png" alt="Multi-Height Warehouse Layout" width="650" /><br>
+  <em>Multi-height pick-and-place environment with two low arched tables and one taller packing workbench.</em>
+</p>
+
+
+## `v0.1.0`
+- [x] Nova Carter teleoperation and working `/odom` + `/tf` Action Graphs (`odom -> base_link`)
+- [x] Real-time 2D SLAM (`slam_toolbox`) using single `front_RPLidar` (`/sim_2d_lidar/scan`)
+- [x] Saved warehouse occupancy grid (`maps/warehouse_map.pgm`)
+
 <p align="center">
   <img src="media/warehouse_simulation.png" alt="Nova Carter in NVIDIA Isaac Sim" width="650" /><br>
   <em>NVIDIA Isaac Sim 6.2.0 running the custom warehouse_scene.usda with Nova Carter.</em>
 </p>
-
-## Current Status (`v0.1.0`)
-- [x] Nova Carter teleoperation and working `/odom` + `/tf` Action Graphs (`odom -> base_link`)
-- [x] Real-time 2D SLAM (`slam_toolbox`) using single `front_RPLidar` (`/sim_2d_lidar/scan`)
-- [x] Saved warehouse occupancy grid (`maps/warehouse_map.pgm`)
 
 <p align="center">
   <img src="media/warehouse_map.jpg" alt="Warehouse 2D SLAM Map" width="500" /><br>
