@@ -7,8 +7,8 @@
                 double radius = 0.1792554497718811
             }
             dictionary Perspective = {
-                double3 position = (4.218214167984682, -3.955046616479795, 7.9674389074880985)
-                double3 target = (-80.06484917050874, -25.49452764228296, -43.14979850718716)
+                double3 position = (-1.42201618429758, -2.246457416581564, 2.499272403692722)
+                double3 target = (42.07204246541563, 92.12907126262361, -52.82954395507904)
             }
             dictionary Right = {
                 double3 position = (-0.7250083767551988, -5, 0.4766453118513774)
@@ -43,7 +43,6 @@
             double "rtx:pathtracing:fireflyFilter:maxUnexposedIntensityPerSample" = 3199.99951171875
             double "rtx:pathtracing:fireflyFilter:maxUnexposedIntensityPerSampleDiffuse" = 3199.99951171875
             double "rtx:raytracing:inscattering:maxRTSampleUnexposedIntensity" = 204799.96875
-            token "rtx:rendermode" = "PathTracing"
             double "rtx:rtpt:fireflyFilter:maxPerEmissiveUnexposedIntensity" = 3199.99951171875
             double "rtx:rtpt:fireflyFilter:maxUnexposedIntensityPerSample" = 3199.99951171875
             double "rtx:rtpt:fireflyFilter:maxUnexposedIntensityPerSampleDiffuse" = 3199.99951171875
@@ -1404,6 +1403,9 @@ def Xform "World"
 
         over "panda_link3"
         {
+            string isaac:nameOverride (
+                displayName = "Name Override"
+            )
             vector3f physics:angularVelocity = (0, 0, 0)
             rel physics:simulationOwner
             vector3f physics:velocity = (0, 0, 0)
@@ -1508,6 +1510,9 @@ def Xform "World"
 
         over "panda_link7"
         {
+            string isaac:nameOverride (
+                displayName = "Name Override"
+            )
             vector3f physics:angularVelocity = (0, 0, 0)
             rel physics:simulationOwner
             vector3f physics:velocity = (0, 0, 0)
@@ -1696,6 +1701,183 @@ def Xform "World"
             uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
         }
     }
+
+    def OmniGraph "ROS_Franka_Joints"
+    {
+        token evaluationMode = "Automatic"
+        token evaluator:type = "execution"
+        token fabricCacheBacking = "StageWithoutHistory"
+        int2 fileFormatVersion = (1, 9)
+        token pipelineStage = "pipelineStageSimulation"
+
+        def OmniGraphNode "OnPlaybackTick"
+        {
+            token node:type = "omni.graph.action.OnPlaybackTick"
+            int node:typeVersion = 2
+            custom double outputs:deltaSeconds
+            custom double outputs:frame
+            custom uint outputs:tick (
+                customData = {
+                    bool isExecution = 1
+                }
+            )
+            custom double outputs:time
+        }
+
+        def OmniGraphNode "Context"
+        {
+            custom uchar inputs:domain_id
+            custom bool inputs:useDomainIDEnvVar
+            token node:type = "isaacsim.ros2.bridge.ROS2Context"
+            int node:typeVersion = 2
+            custom uint64 outputs:context
+        }
+
+        def OmniGraphNode "ReadSimTime"
+        {
+            custom uint64 inputs:referenceTimeDenominator
+            custom int64 inputs:referenceTimeNumerator
+            custom bool inputs:resetOnStop = 1
+            token node:type = "isaacsim.core.nodes.IsaacReadSimulationTime"
+            int node:typeVersion = 1
+            custom double outputs:simulationTime
+        }
+
+        def OmniGraphNode "ReadJointState"
+        {
+            custom uint inputs:execIn (
+                customData = {
+                    bool isExecution = 1
+                }
+            )
+            prepend uint inputs:execIn.connect = </World/ROS_Franka_Joints/OnPlaybackTick.outputs:tick>
+            custom rel inputs:prim = </World/nova_carter/chassis_link> (
+                customData = {
+                    dictionary omni = {
+                        dictionary graph = {
+                            string relType = "target"
+                        }
+                    }
+                }
+            )
+            token node:type = "isaacsim.sensors.physics.IsaacReadJointState"
+            int node:typeVersion = 1
+            custom uint outputs:execOut (
+                customData = {
+                    bool isExecution = 1
+                }
+            )
+            custom uchar[] outputs:jointDofTypes
+            custom double[] outputs:jointEfforts
+            custom token[] outputs:jointNames
+            custom double[] outputs:jointPositions
+            custom double[] outputs:jointVelocities
+            custom float outputs:sensorTime
+            custom float outputs:stageMetersPerUnit
+        }
+
+        def OmniGraphNode "PublisherJointState"
+        {
+            custom uint64 inputs:context
+            prepend uint64 inputs:context.connect = </World/ROS_Franka_Joints/Context.outputs:context>
+            custom uint inputs:execIn (
+                customData = {
+                    bool isExecution = 1
+                }
+            )
+            prepend uint inputs:execIn.connect = </World/ROS_Franka_Joints/ReadJointState.outputs:execOut>
+            custom uchar[] inputs:jointDofTypes
+            prepend uchar[] inputs:jointDofTypes.connect = </World/ROS_Franka_Joints/ReadJointState.outputs:jointDofTypes>
+            custom double[] inputs:jointEfforts
+            prepend double[] inputs:jointEfforts.connect = </World/ROS_Franka_Joints/ReadJointState.outputs:jointEfforts>
+            custom token[] inputs:jointNames
+            prepend token[] inputs:jointNames.connect = </World/ROS_Franka_Joints/ReadJointState.outputs:jointNames>
+            custom double[] inputs:jointPositions
+            prepend double[] inputs:jointPositions.connect = </World/ROS_Franka_Joints/ReadJointState.outputs:jointPositions>
+            custom double[] inputs:jointVelocities
+            prepend double[] inputs:jointVelocities.connect = </World/ROS_Franka_Joints/ReadJointState.outputs:jointVelocities>
+            custom string inputs:nodeNamespace = ""
+            custom string inputs:qosProfile
+            custom uint64 inputs:queueSize
+            custom float inputs:sensorTime
+            prepend float inputs:sensorTime.connect = </World/ROS_Franka_Joints/ReadJointState.outputs:sensorTime>
+            custom float inputs:stageMetersPerUnit
+            prepend float inputs:stageMetersPerUnit.connect = </World/ROS_Franka_Joints/ReadJointState.outputs:stageMetersPerUnit>
+            custom rel inputs:targetPrim (
+                customData = {
+                    dictionary omni = {
+                        dictionary graph = {
+                            string relType = "target"
+                        }
+                    }
+                }
+            )
+            custom double inputs:timeStamp
+            prepend double inputs:timeStamp.connect = </World/ROS_Franka_Joints/ReadSimTime.outputs:simulationTime>
+            custom string inputs:topicName = "/joint_states"
+            token node:type = "isaacsim.ros2.bridge.ROS2PublishJointState"
+            int node:typeVersion = 1
+        }
+
+        def OmniGraphNode "SubscriberJointState"
+        {
+            custom uint64 inputs:context
+            prepend uint64 inputs:context.connect = </World/ROS_Franka_Joints/Context.outputs:context>
+            custom uint inputs:execIn (
+                customData = {
+                    bool isExecution = 1
+                }
+            )
+            prepend uint inputs:execIn.connect = </World/ROS_Franka_Joints/OnPlaybackTick.outputs:tick>
+            custom string inputs:nodeNamespace = ""
+            custom string inputs:qosProfile
+            custom uint64 inputs:queueSize
+            custom string inputs:topicName = "/joint_command"
+            token node:type = "isaacsim.ros2.bridge.ROS2SubscribeJointState"
+            int node:typeVersion = 2
+            custom double[] outputs:effortCommand
+            custom uint outputs:execOut (
+                customData = {
+                    bool isExecution = 1
+                }
+            )
+            custom token[] outputs:jointNames
+            custom double[] outputs:positionCommand
+            custom double outputs:timeStamp
+            custom double[] outputs:velocityCommand
+        }
+
+        def OmniGraphNode "ArticulationController"
+        {
+            custom double[] inputs:effortCommand
+            prepend double[] inputs:effortCommand.connect = </World/ROS_Franka_Joints/SubscriberJointState.outputs:effortCommand>
+            custom uint inputs:execIn (
+                customData = {
+                    bool isExecution = 1
+                }
+            )
+            prepend uint inputs:execIn.connect = </World/ROS_Franka_Joints/OnPlaybackTick.outputs:tick>
+            custom int[] inputs:jointIndices
+            custom token[] inputs:jointNames
+            prepend token[] inputs:jointNames.connect = </World/ROS_Franka_Joints/SubscriberJointState.outputs:jointNames>
+            custom double[] inputs:positionCommand
+            prepend double[] inputs:positionCommand.connect = </World/ROS_Franka_Joints/SubscriberJointState.outputs:positionCommand>
+            custom string inputs:robotPath
+            custom rel inputs:targetPrim = </World/nova_carter/chassis_link> (
+                customData = {
+                    dictionary omni = {
+                        dictionary graph = {
+                            string relType = "target"
+                        }
+                    }
+                }
+            )
+            custom double[] inputs:velocityCommand
+            prepend double[] inputs:velocityCommand.connect = </World/ROS_Franka_Joints/SubscriberJointState.outputs:velocityCommand>
+            token node:type = "isaacsim.core.nodes.IsaacArticulationController"
+            int node:typeVersion = 1
+        }
+    }
 }
 
 def Xform "Environment"
@@ -1765,7 +1947,7 @@ def "Render" (
                 uint omni:rtx:pt:maxSamplesPerLaunch = 2073600
                 uint omni:rtx:pt:mgpu:maxPixelsPerRegionExponent = 12
                 bool omni:rtx:reflections:denoiser:enabled = 0
-                token omni:rtx:rendermode = "PathTracing"
+                token omni:rtx:rendermode = "RealTimePathTracing"
                 color3f omni:rtx:rt:ambientLight:color = (0.1, 0.1, 0.1)
                 bool omni:rtx:rt:demoire = 0
                 float omni:rtx:rt:directLighting:maxRayUnexposedIntensity = 6399.999
@@ -2030,7 +2212,7 @@ def "Render" (
             {
                 rel camera = </World/nova_carter/chassis_link/sensors/front_RPLidar/RPLidar_S2E>
                 bool omni:rtx:material:db:syncLoads = 1
-                token omni:rtx:rendermode = "PathTracing"
+                token omni:rtx:rendermode = "RealTimePathTracing"
                 bool omni:rtx:rt:ecoMode:enabled
                 bool omni:rtx:scene:hydra:materialSyncLoads = 1
                 rel orderedVars = </Render/Vars/LdrColor>
@@ -2126,10 +2308,10 @@ over "OmniverseKit_Persp" (
     float exposure:time = 0.02
     float focalLength = 18.147562
     float focusDistance = 400
-    custom uniform vector3d omni:kit:centerOfInterest = (0, 0, -100.89874116900421)
-    float3 xformOp:rotateXYZ = (59.561104, -1.7302218e-12, 104.33574)
+    custom uniform vector3d omni:kit:centerOfInterest = (0, 0, -117.72744569966197)
+    float3 xformOp:rotateXYZ = (61.967403, -1.7699787e-12, -24.743162)
     float3 xformOp:scale = (1, 1, 1)
-    double3 xformOp:translate = (4.218214167984682, -3.955046616479795, 7.9674389074880985)
+    double3 xformOp:translate = (-1.42201618429758, -2.246457416581564, 2.499272403692722)
     uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateXYZ", "xformOp:scale"]
 }
 
